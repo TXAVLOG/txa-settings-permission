@@ -695,53 +695,85 @@ public class TxaSettingsPermissionPlugin extends Plugin {
 
     @PluginMethod
     public void checkAllRequired(PluginCall call) {
-        JSObject result = new JSObject();
-        JSObject checks = new JSObject();
+        try {
+            JSObject result = new JSObject();
+            JSObject checks = new JSObject();
 
-        // MANAGE_EXTERNAL_STORAGE
-        boolean manageFiles = Build.VERSION.SDK_INT < Build.VERSION_CODES.R
-            || Environment.isExternalStorageManager();
-        checks.put("manageAllFiles", manageFiles);
+            // MANAGE_EXTERNAL_STORAGE
+            boolean manageFiles = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                try {
+                    manageFiles = Environment.isExternalStorageManager();
+                } catch (Exception e) {
+                    logWarn("isExternalStorageManager check failed: " + e.getMessage());
+                    manageFiles = false;
+                }
+            }
+            checks.put("manageAllFiles", manageFiles);
 
-        // Overlay
-        boolean overlay = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-            || Settings.canDrawOverlays(getContext());
-        checks.put("overlay", overlay);
+            // Overlay
+            boolean overlay = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                try {
+                    overlay = Settings.canDrawOverlays(getContext());
+                } catch (Exception e) {
+                    logWarn("canDrawOverlays check failed: " + e.getMessage());
+                    overlay = false;
+                }
+            }
+            checks.put("overlay", overlay);
 
-        // Install unknown apps
-        boolean installUnknown = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
-            || getContext().getPackageManager().canRequestPackageInstalls();
-        checks.put("installUnknownApps", installUnknown);
+            // Install unknown apps
+            boolean installUnknown = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    installUnknown = getContext().getPackageManager().canRequestPackageInstalls();
+                } catch (Exception e) {
+                    logWarn("canRequestPackageInstalls check failed: " + e.getMessage());
+                    installUnknown = false;
+                }
+            }
+            checks.put("installUnknownApps", installUnknown);
 
-        // Battery optimization
-        boolean batteryIgnoring = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-            batteryIgnoring = pm != null && pm.isIgnoringBatteryOptimizations(getContext().getPackageName());
+            // Battery optimization
+            boolean batteryIgnoring = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                try {
+                    PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+                    batteryIgnoring = pm != null && pm.isIgnoringBatteryOptimizations(getContext().getPackageName());
+                } catch (Exception e) {
+                    logWarn("batteryOptimization check failed: " + e.getMessage());
+                    batteryIgnoring = false;
+                }
+            }
+            checks.put("batteryOptimization", batteryIgnoring);
+
+            // Runtime permissions
+            checks.put("camera", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED);
+            checks.put("microphone", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
+            checks.put("location", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+            // Media permissions (Android 13+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                checks.put("readMediaImages", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED);
+                checks.put("readMediaVideo", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED);
+                checks.put("readMediaAudio", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED);
+                checks.put("postNotifications", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+            } else {
+                checks.put("readExternalStorage", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+                checks.put("writeExternalStorage", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+            }
+
+            result.put("checks", checks);
+            result.put("androidSdk", Build.VERSION.SDK_INT);
+            result.put("androidRelease", Build.VERSION.RELEASE);
+            
+            logInfo("checkAllRequired → SDK " + Build.VERSION.SDK_INT + " | Success");
+            call.resolve(result);
+        } catch (Exception e) {
+            logError("checkAllRequired FATAL: " + e.getMessage());
+            call.reject("Lỗi hệ thống khi kiểm tra quyền: " + e.getMessage(), "TXA_CHECK_FAILED", e);
         }
-        checks.put("batteryOptimization", batteryIgnoring);
-
-        // Runtime permissions thường gặp
-        checks.put("camera", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED);
-        checks.put("microphone", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
-        checks.put("location", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
-
-        // Media permissions (Android 13+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            checks.put("readMediaImages", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED);
-            checks.put("readMediaVideo", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED);
-            checks.put("readMediaAudio", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED);
-            checks.put("postNotifications", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
-        } else {
-            checks.put("readExternalStorage", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-            checks.put("writeExternalStorage", ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-        }
-
-        result.put("checks", checks);
-        result.put("androidSdk", Build.VERSION.SDK_INT);
-        result.put("androidRelease", Build.VERSION.RELEASE);
-        logInfo("checkAllRequired → SDK " + Build.VERSION.SDK_INT + " | checks done");
-        call.resolve(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
