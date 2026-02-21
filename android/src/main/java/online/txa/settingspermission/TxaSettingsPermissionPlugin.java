@@ -185,22 +185,25 @@ public class TxaSettingsPermissionPlugin extends Plugin {
 
     @PluginMethod
     public void checkManageAllFiles(PluginCall call) {
-        JSObject result = new JSObject();
-        boolean granted;
+        try {
+            JSObject result = new JSObject();
+            boolean granted = true;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            granted = Environment.isExternalStorageManager();
-        } else {
-            granted = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                granted = Environment.isExternalStorageManager();
+            }
+
+            result.put("granted", granted);
+            result.put("androidSdk", Build.VERSION.SDK_INT);
+            result.put("log", buildLog(granted ? "info" : "warn",
+                granted ? "Đã có quyền MANAGE_EXTERNAL_STORAGE" : "Chưa có quyền MANAGE_EXTERNAL_STORAGE",
+                "CHECK_MANAGE_ALL_FILES", granted));
+            logInfo("checkManageAllFiles → " + granted);
+            call.resolve(result);
+        } catch (Throwable e) {
+            logError("checkManageAllFiles crash: " + e.getMessage());
+            call.reject("TXA_ERR: " + e.getMessage());
         }
-
-        result.put("granted", granted);
-        result.put("androidSdk", Build.VERSION.SDK_INT);
-        result.put("log", buildLog(granted ? "info" : "warn",
-            granted ? "Đã có quyền MANAGE_EXTERNAL_STORAGE" : "Chưa có quyền MANAGE_EXTERNAL_STORAGE",
-            "CHECK_MANAGE_ALL_FILES", granted));
-        logInfo("checkManageAllFiles → " + granted);
-        call.resolve(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -324,18 +327,21 @@ public class TxaSettingsPermissionPlugin extends Plugin {
 
     @PluginMethod
     public void checkInstallUnknownApps(PluginCall call) {
-        boolean granted;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            granted = getContext().getPackageManager().canRequestPackageInstalls();
-        } else {
-            granted = true;
+        try {
+            boolean granted = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                granted = getContext().getPackageManager().canRequestPackageInstalls();
+            }
+            JSObject result = new JSObject();
+            result.put("granted", granted);
+            result.put("log", buildLog(granted ? "info" : "warn",
+                granted ? "Đã có quyền cài APK ngoài" : "Chưa có quyền cài APK ngoài",
+                "CHECK_INSTALL_UNKNOWN", granted));
+            call.resolve(result);
+        } catch (Throwable e) {
+            logError("checkInstallUnknownApps crash: " + e.getMessage());
+            call.reject("TXA_ERR: " + e.getMessage());
         }
-        JSObject result = new JSObject();
-        result.put("granted", granted);
-        result.put("log", buildLog(granted ? "info" : "warn",
-            granted ? "Đã có quyền cài APK ngoài" : "Chưa có quyền cài APK ngoài",
-            "CHECK_INSTALL_UNKNOWN", granted));
-        call.resolve(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -397,18 +403,23 @@ public class TxaSettingsPermissionPlugin extends Plugin {
 
     @PluginMethod
     public void checkBatteryOptimization(PluginCall call) {
-        boolean ignoring = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-            ignoring = pm != null && pm.isIgnoringBatteryOptimizations(getContext().getPackageName());
+        try {
+            boolean ignoring = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+                ignoring = pm != null && pm.isIgnoringBatteryOptimizations(getContext().getPackageName());
+            }
+            JSObject result = new JSObject();
+            result.put("ignoring", ignoring);
+            result.put("granted", ignoring);
+            result.put("log", buildLog(ignoring ? "info" : "warn",
+                ignoring ? "App đang được bỏ qua tối ưu hóa pin" : "App vẫn bị tối ưu hóa pin",
+                "CHECK_BATTERY", ignoring));
+            call.resolve(result);
+        } catch (Throwable e) {
+            logError("checkBatteryOptimization crash: " + e.getMessage());
+            call.reject("TXA_ERR: " + e.getMessage());
         }
-        JSObject result = new JSObject();
-        result.put("ignoring", ignoring);
-        result.put("granted", ignoring);
-        result.put("log", buildLog(ignoring ? "info" : "warn",
-            ignoring ? "App đang được bỏ qua tối ưu hóa pin" : "App vẫn bị tối ưu hóa pin",
-            "CHECK_BATTERY", ignoring));
-        call.resolve(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -603,20 +614,25 @@ public class TxaSettingsPermissionPlugin extends Plugin {
 
     @PluginMethod
     public void checkRuntimePermission(PluginCall call) {
-        String permission = call.getString("permission");
-        if (permission == null || permission.isEmpty()) {
-            call.reject("TXA_ERR_PARAM: Thiếu tham số 'permission'", "MISSING_PARAM");
-            return;
+        try {
+            String permission = call.getString("permission");
+            if (permission == null || permission.isEmpty()) {
+                call.reject("TXA_ERR_PARAM: Thiếu tham số 'permission'", "MISSING_PARAM");
+                return;
+            }
+            boolean granted = ContextCompat.checkSelfPermission(getContext(), permission)
+                == PackageManager.PERMISSION_GRANTED;
+            JSObject result = new JSObject();
+            result.put("permission", permission);
+            result.put("granted", granted);
+            result.put("log", buildLog(granted ? "info" : "warn",
+                granted ? "Đã có quyền: " + permission : "Chưa có quyền: " + permission,
+                "CHECK_RUNTIME_PERMISSION", granted));
+            call.resolve(result);
+        } catch (Throwable e) {
+            logError("checkRuntimePermission crash: " + e.getMessage());
+            call.reject("TXA_ERR: " + e.getMessage());
         }
-        boolean granted = ContextCompat.checkSelfPermission(getContext(), permission)
-            == PackageManager.PERMISSION_GRANTED;
-        JSObject result = new JSObject();
-        result.put("permission", permission);
-        result.put("granted", granted);
-        result.put("log", buildLog(granted ? "info" : "warn",
-            granted ? "Đã có quyền: " + permission : "Chưa có quyền: " + permission,
-            "CHECK_RUNTIME_PERMISSION", granted));
-        call.resolve(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
