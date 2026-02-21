@@ -1,6 +1,6 @@
 {
   "name": "txa-settings-permission",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Capacitor plugin by TXA — Mở tất cả màn hình Settings cấp quyền trên Android, tự tương thích theo Android version",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -11,6 +11,7 @@
     "android/build.gradle",
     "dist/",
     "src/",
+    "scripts/",
     "README.md",
     "LICENSE"
   ],
@@ -25,9 +26,19 @@
     "url": "https://github.com/TXAVLOG/txa-settings-permission/issues"
   },
   "keywords": [
-    "capacitor", "plugin", "android", "permission", "settings",
-    "manage-external-storage", "overlay", "battery", "install-unknown",
-    "notification", "accessibility", "txa", "txavlog"
+    "capacitor",
+    "plugin",
+    "android",
+    "permission",
+    "settings",
+    "manage-external-storage",
+    "overlay",
+    "battery",
+    "install-unknown",
+    "notification",
+    "accessibility",
+    "txa",
+    "txavlog"
   ],
   "scripts": {
     "build": "npm run clean && npm run compile",
