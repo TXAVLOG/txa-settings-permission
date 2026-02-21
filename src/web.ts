@@ -66,6 +66,12 @@ export class TxaSettingsPermissionWeb
   async checkOverlay(): Promise<PermissionResult> { return mockGranted('CHECK_OVERLAY'); }
   async openInstallUnknownApps(): Promise<OpenSettingsResult> { return mockOpen('INSTALL_UNKNOWN_APPS'); }
   async checkInstallUnknownApps(): Promise<PermissionResult> { return mockGranted('CHECK_INSTALL_UNKNOWN'); }
+
+  async setBrightness(options: { value: number }): Promise<void> { console.log('Web mock setBrightness:', options.value); }
+  async getBrightness(): Promise<{ value: number }> { return { value: 1 }; }
+  async setVolume(options: { value: number }): Promise<void> { console.log('Web mock setVolume:', options.value); }
+  async getVolume(): Promise<{ value: number }> { return { value: 1 }; }
+
   async openBatteryOptimization(): Promise<OpenSettingsResult> { return mockOpen('BATTERY_OPTIMIZATION'); }
   async checkBatteryOptimization(): Promise<BatteryOptimizationResult> {
     return { ignoring: true, granted: true, log: webLog('CHECK_BATTERY') };

@@ -784,6 +784,120 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     // FILE SYSTEM METHODS (Plugin Style)
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // BRIGHTNESS & VOLUME CONTROL
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @PluginMethod
+    public void getBrightness(PluginCall call) {
+        try {
+            float brightness = -1;
+            // First check window brightness
+            android.view.WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+            brightness = lp.screenBrightness;
+
+            if (brightness < 0) {
+                // Fallback to system brightness (0-255)
+                brightness = Settings.System.getInt(getContext().getContentResolver(), Settings.System.SCREEN_BRIGHTNESS) / 255.0f;
+            }
+
+            JSObject res = new JSObject();
+            res.put("value", brightness);
+            res.put("log", buildLog("info", "Đã lấy độ sáng hiện tại: " + Math.round(brightness * 100) + "%", "GET_BRIGHTNESS", true));
+            call.resolve(res);
+        } catch (Exception e) {
+            logError("getBrightness → " + e.getMessage());
+            call.reject("TXA_ERR_GET_BRIGHTNESS: Không thể lấy độ sáng → " + e.getMessage(), "GET_BRIGHTNESS_FAILED", e);
+        }
+    }
+
+    @PluginMethod
+    public void setBrightness(PluginCall call) {
+        final Double value = call.getDouble("value");
+        if (value == null) {
+            call.reject("TXA_ERR_PARAM: Giá trị độ sáng (value) là bắt buộc (0.0 đến 1.0)", "MISSING_PARAM");
+            return;
+        }
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    float b = value.floatValue();
+                    if (b < 0) b = 0.01f;
+                    if (b > 1.0f) b = 1.0f;
+
+                    // 1. Set window brightness (instant, no permission needed)
+                    android.view.WindowManager.LayoutParams lp = getActivity().getWindow().getAttributes();
+                    lp.screenBrightness = b;
+                    getActivity().getWindow().setAttributes(lp);
+
+                    // 2. Try to set system brightness if we have permission
+                    boolean systemSet = false;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (Settings.System.canWrite(getContext())) {
+                            systemSet = Settings.System.putInt(getContext().getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int)(b * 255));
+                        }
+                    } else {
+                         systemSet = Settings.System.putInt(getContext().getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, (int)(b * 255));
+                    }
+
+                    JSObject res = new JSObject();
+                    res.put("success", true);
+                    res.put("systemUpdated", systemSet);
+                    res.put("log", buildLog("info", "Đã đặt độ sáng: " + Math.round(b * 100) + "%", "SET_BRIGHTNESS", true));
+                    call.resolve(res);
+                } catch (Exception e) {
+                    logError("setBrightness → " + e.getMessage());
+                    call.reject("TXA_ERR_SET_BRIGHTNESS: Không thể lưu độ sáng hệ thống → " + e.getMessage(), "SET_BRIGHTNESS_FAILED", e);
+                }
+            }
+        });
+    }
+
+    @PluginMethod
+    public void getVolume(PluginCall call) {
+        try {
+            android.media.AudioManager audioManager = (android.media.AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+            int max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+            int current = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
+            float ratio = (float)current / max;
+
+            JSObject res = new JSObject();
+            res.put("value", ratio);
+            res.put("log", buildLog("info", "Đã lấy âm lượng hiện tại: " + Math.round(ratio * 100) + "%", "GET_VOLUME", true));
+            call.resolve(res);
+        } catch (Exception e) {
+            logError("getVolume → " + e.getMessage());
+            call.reject("TXA_ERR_GET_VOLUME: Không thể lấy mức âm lượng → " + e.getMessage(), "GET_VOLUME_FAILED", e);
+        }
+    }
+
+    @PluginMethod
+    public void setVolume(PluginCall call) {
+        Double value = call.getDouble("value");
+        if (value == null) {
+            call.reject("TXA_ERR_PARAM: Giá trị âm lượng (value) là bắt buộc (0.0 đến 1.0)", "MISSING_PARAM");
+            return;
+        }
+
+        try {
+            android.media.AudioManager audioManager = (android.media.AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+            int max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+            int v = (int) (value * max);
+            
+            audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, v, 0);
+
+            JSObject res = new JSObject();
+            res.put("success", true);
+            res.put("log", buildLog("info", "Đã đặt âm lượng: " + Math.round(value * 100) + "%", "SET_VOLUME", true));
+            call.resolve(res);
+        } catch (Exception e) {
+            logError("setVolume → " + e.getMessage());
+            call.reject("TXA_ERR_SET_VOLUME: Không thể đặt âm lượng hệ thống → " + e.getMessage(), "SET_VOLUME_FAILED", e);
+        }
+    }
+
     private File getFileObject(String path) {
         if (path.startsWith("/")) {
             return new File(path);

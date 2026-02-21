@@ -138,6 +138,12 @@ export interface TxaSettingsPermissionPlugin {
   openOverlaySettings(): Promise<OpenSettingsResult>;
   checkOverlay(): Promise<PermissionResult>;
 
+  // System Control (Brightness & Volume)
+  setBrightness(options: { value: number }): Promise<void>;
+  getBrightness(): Promise<{ value: number }>;
+  setVolume(options: { value: number }): Promise<void>;
+  getVolume(): Promise<{ value: number }>;
+
   // Install Unknown Apps (Android 8+)
   openInstallUnknownApps(): Promise<OpenSettingsResult>;
   checkInstallUnknownApps(): Promise<PermissionResult>;
