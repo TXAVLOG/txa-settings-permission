@@ -763,6 +763,7 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     public void writeFile(PluginCall call) {
         String path = call.getString("path");
         String data = call.getString("data");
+        String encoding = call.getString("encoding", "utf8");
         boolean recursive = call.getBoolean("recursive", false);
 
         if (path == null || data == null) {
@@ -777,7 +778,12 @@ public class TxaSettingsPermissionPlugin extends Plugin {
             }
 
             try (FileOutputStream fos = new FileOutputStream(file)) {
-                fos.write(data.getBytes(StandardCharsets.UTF_8));
+                if ("base64".equalsIgnoreCase(encoding)) {
+                    byte[] decodedBytes = Base64.decode(data, Base64.DEFAULT);
+                    fos.write(decodedBytes);
+                } else {
+                    fos.write(data.getBytes(StandardCharsets.UTF_8));
+                }
             }
             call.resolve();
         } catch (Exception e) {
@@ -789,6 +795,7 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     public void appendFile(PluginCall call) {
         String path = call.getString("path");
         String data = call.getString("data");
+        String encoding = call.getString("encoding", "utf8");
 
         if (path == null || data == null) {
             call.reject("Path and data are required");
@@ -802,7 +809,12 @@ public class TxaSettingsPermissionPlugin extends Plugin {
             }
 
             try (FileOutputStream fos = new FileOutputStream(file, true)) {
-                fos.write(data.getBytes(StandardCharsets.UTF_8));
+                if ("base64".equalsIgnoreCase(encoding)) {
+                    byte[] decodedBytes = Base64.decode(data, Base64.DEFAULT);
+                    fos.write(decodedBytes);
+                } else {
+                    fos.write(data.getBytes(StandardCharsets.UTF_8));
+                }
             }
             call.resolve();
         } catch (Exception e) {

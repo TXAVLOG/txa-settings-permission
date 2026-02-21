@@ -71,6 +71,8 @@ export interface WriteFileOptions {
   path: string;
   data: string;
   recursive?: boolean;
+  /** 'utf8' (mặc định) hoặc 'base64' cho dữ liệu nhị phân */
+  encoding?: 'utf8' | 'base64';
 }
 
 export interface ReadFileOptions {
