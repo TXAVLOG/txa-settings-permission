@@ -637,7 +637,7 @@ public class TxaSettingsPermissionPlugin extends Plugin {
         List<String> missing = new ArrayList<>();
 
         try {
-            JSONArray arr = permsArray.toJSONArray();
+            JSONArray arr = new JSONArray(permsArray.toList());
             if (arr != null) {
                 for (int i = 0; i < arr.length(); i++) {
                     String perm = arr.getString(i);
