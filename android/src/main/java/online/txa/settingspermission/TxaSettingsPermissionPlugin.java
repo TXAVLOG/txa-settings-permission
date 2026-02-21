@@ -19,7 +19,14 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Base64;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -740,6 +747,149 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     // ─────────────────────────────────────────────────────────────────────────
     // PRIVATE HELPER
     // ─────────────────────────────────────────────────────────────────────────
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FILE SYSTEM METHODS (Plugin Style)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private File getFileObject(String path) {
+        if (path.startsWith("/")) {
+            return new File(path);
+        }
+        return new File(getContext().getExternalFilesDir(null), path);
+    }
+
+    @PluginMethod
+    public void writeFile(PluginCall call) {
+        String path = call.getString("path");
+        String data = call.getString("data");
+        boolean recursive = call.getBoolean("recursive", false);
+
+        if (path == null || data == null) {
+            call.reject("Path and data are required");
+            return;
+        }
+
+        try {
+            File file = getFileObject(path);
+            if (recursive && file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(data.getBytes(StandardCharsets.UTF_8));
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Failed to write file: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void appendFile(PluginCall call) {
+        String path = call.getString("path");
+        String data = call.getString("data");
+
+        if (path == null || data == null) {
+            call.reject("Path and data are required");
+            return;
+        }
+
+        try {
+            File file = getFileObject(path);
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                fos.write(data.getBytes(StandardCharsets.UTF_8));
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Failed to append file: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void readFile(PluginCall call) {
+        String path = call.getString("path");
+        if (path == null) {
+            call.reject("Path is required");
+            return;
+        }
+
+        try {
+            File file = getFileObject(path);
+            if (!file.exists()) {
+                call.reject("File does not exist");
+                return;
+            }
+
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            fis.close();
+
+            String content = new String(data, StandardCharsets.UTF_8);
+            JSObject result = new JSObject();
+            result.put("data", content);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Failed to read file: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void deleteFile(PluginCall call) {
+        String path = call.getString("path");
+        if (path == null) {
+            call.reject("Path is required");
+            return;
+        }
+
+        try {
+            File file = getFileObject(path);
+            if (file.exists() && file.delete()) {
+                call.resolve();
+            } else {
+                call.reject("File could not be deleted or does not exist");
+            }
+        } catch (Exception e) {
+            call.reject("Failed to delete file: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void mkdir(PluginCall call) {
+        String path = call.getString("path");
+        boolean recursive = call.getBoolean("recursive", false);
+        if (path == null) {
+            call.reject("Path is required");
+            return;
+        }
+
+        File dir = getFileObject(path);
+        boolean success = recursive ? dir.mkdirs() : dir.mkdir();
+        if (success || dir.exists()) {
+            call.resolve();
+        } else {
+            call.reject("Could not create directory");
+        }
+    }
+
+    @PluginMethod
+    public void getUri(PluginCall call) {
+        String path = call.getString("path");
+        if (path == null) {
+            call.reject("Path is required");
+            return;
+        }
+
+        File file = getFileObject(path);
+        JSObject result = new JSObject();
+        result.put("uri", Uri.fromFile(file).toString());
+        call.resolve(result);
+    }
 
     private void openSimpleSettings(PluginCall call, String action, String screenName, String logMsg) {
         try {

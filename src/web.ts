@@ -16,6 +16,12 @@ import type {
   CheckMultiplePermissionsOptions,
   CheckMultiplePermissionsResult,
   TxaPermissionLog,
+  WriteFileOptions,
+  ReadFileOptions,
+  ReadFileResult,
+  DeleteFileOptions,
+  GetUriOptions,
+  GetUriResult
 } from './definitions';
 
 function webLog(action: string): TxaPermissionLog {
@@ -41,8 +47,7 @@ function mockGranted(action: string): PermissionResult {
 
 export class TxaSettingsPermissionWeb
   extends WebPlugin
-  implements TxaSettingsPermissionPlugin
-{
+  implements TxaSettingsPermissionPlugin {
   async getDeviceInfo(): Promise<DeviceInfoResult> {
     return {
       androidSdk: 0, androidRelease: 'web', manufacturer: 'web',
@@ -99,5 +104,17 @@ export class TxaSettingsPermissionWeb
       androidSdk: 0,
       androidRelease: 'web',
     };
+  }
+
+  async writeFile(_options: WriteFileOptions): Promise<void> { console.warn('writeFile is not implemented on web'); }
+  async appendFile(_options: WriteFileOptions): Promise<void> { console.warn('appendFile is not implemented on web'); }
+  async readFile(_options: ReadFileOptions): Promise<ReadFileResult> {
+    console.warn('readFile is not implemented on web');
+    return { data: '' };
+  }
+  async deleteFile(_options: DeleteFileOptions): Promise<void> { console.warn('deleteFile is not implemented on web'); }
+  async mkdir(_options: { path: string, recursive?: boolean }): Promise<void> { console.warn('mkdir is not implemented on web'); }
+  async getUri(options: GetUriOptions): Promise<GetUriResult> {
+    return { uri: options.path };
   }
 }

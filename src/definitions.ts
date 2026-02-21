@@ -67,6 +67,32 @@ export interface CheckAllRequiredResult {
   androidRelease: string;
 }
 
+export interface WriteFileOptions {
+  path: string;
+  data: string;
+  recursive?: boolean;
+}
+
+export interface ReadFileOptions {
+  path: string;
+}
+
+export interface ReadFileResult {
+  data: string;
+}
+
+export interface DeleteFileOptions {
+  path: string;
+}
+
+export interface GetUriOptions {
+  path: string;
+}
+
+export interface GetUriResult {
+  uri: string;
+}
+
 export interface CheckRuntimePermissionOptions {
   /** Tên đầy đủ của permission, vd: "android.permission.CAMERA" */
   permission: string;
@@ -148,4 +174,12 @@ export interface TxaSettingsPermissionPlugin {
 
   // All-in-one check
   checkAllRequired(): Promise<CheckAllRequiredResult>;
+
+  // File System (Plugins style)
+  writeFile(options: WriteFileOptions): Promise<void>;
+  appendFile(options: WriteFileOptions): Promise<void>;
+  readFile(options: ReadFileOptions): Promise<ReadFileResult>;
+  deleteFile(options: DeleteFileOptions): Promise<void>;
+  mkdir(options: { path: string, recursive?: boolean }): Promise<void>;
+  getUri(options: GetUriOptions): Promise<GetUriResult>;
 }
