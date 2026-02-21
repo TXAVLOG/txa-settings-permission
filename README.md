@@ -340,43 +340,24 @@ function waitForResume(): Promise<void> {
 
 ---
 
-## 🏗️ Build & Publish
+## 📋 API Summary & Compatibility
 
-```bash
-# Cài dev dependencies
-npm install
+Dưới đây là bảng tổng hợp các phương thức chính và mức độ tương thích trên các phiên bản Android.
 
-# Build
-npm run build
-
-# Publish lên NPM
-npm login
-npm publish --access public
-
-# Update version
-npm version patch && npm publish --access public
-```
-
----
-
-## 📂 Cấu trúc
-
-```
-txa-settings-permission/
-├── android/
-│   ├── build.gradle
-│   └── src/main/java/online/txa/settingspermission/
-│       └── TxaSettingsPermissionPlugin.java
-├── src/
-│   ├── index.ts          ← Entry point
-│   ├── definitions.ts    ← TypeScript types
-│   └── web.ts            ← Web mock
-├── scripts/
-│   └── check-capacitor.js
-├── package.json
-├── tsconfig.json
-└── rollup.config.js
-```
+| Method | Ý nghĩa | Tham số | Android tương thích | Ghi chú |
+|:---|:---|:---|:---:|:---|
+| `getDeviceInfo` | Lấy thông tin thiết bị | Không | 5.0+ | Trả về SDK, Model, Manufacturer và Support flags |
+| `checkManageAllFiles` | Check quyền quản lý tệp | Không | 11+ | SDK < 30 tự trả về `granted: true` |
+| `openManageAllFiles` | Mở màn hình cấp quyền tệp | Không | 11+ | SDK < 30 trả về log `warn` và không mở màn hình |
+| `checkOverlay` | Check quyền Overlay | Không | 6.0+ | |
+| `openOverlaySettings` | Mở màn hình vẽ trên app khác | Không | 6.0+ | |
+| `checkBatteryOptimization` | Check tối ưu hóa pin | Không | 6.0+ | |
+| `openBatteryOptimization` | Mở màn hình tối ưu pin | Không | 6.0+ | Mặc định mở danh sách tất cả ứng dụng |
+| `openAppNotificationSettings` | Mở thông báo của App | Không | 5.0+ | Tự động chọn app hiện tại (SDK 26+) |
+| `openAccessibilitySettings` | Mở cài đặt Trợ năng | Không | 5.0+ | Mở màn hình danh sách dịch vụ trợ năng |
+| `openAppDetailsSettings` | Mở thông tin ứng dụng | Không | 5.0+ | Màn hình sytem app info (Clear data, Force stop...) |
+| `openSettings` | Mở cài đặt App chung | Không | 5.0+ | Màn hình cài đặt tổng quát của ứng dụng |
+| `checkMultiplePermissions` | Check nhiều quyền cùng lúc | `{ permissions: string[] }` | 5.0+ | Truyền vào mảng `android.permission.NAME` |
 
 ---
 
