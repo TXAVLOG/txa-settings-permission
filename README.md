@@ -325,20 +325,54 @@ function waitForResume(): Promise<void> {
 
 ---
 
-## 🗺️ Android Version Compatibility
+## 📖 API Reference Detail
 
-| Method | API 22-22 (5.1) | API 23 (6) | API 26 (8) | API 30 (11) | API 33 (13) |
-|--------|:-:|:-:|:-:|:-:|:-:|
-| `openManageAllFiles` | ✅ auto | ✅ auto | ✅ auto | ✅ Settings | ✅ Settings |
-| `openOverlaySettings` | ✅ auto | ✅ Settings | ✅ Settings | ✅ Settings | ✅ Settings |
-| `openInstallUnknownApps` | ✅ auto | ⚠️ Security | ⚠️ Security | ✅ Per-app | ✅ Per-app |
-| `openBatteryOptimization` | ✅ auto | ✅ Settings | ✅ Settings | ✅ Settings | ✅ Settings |
-| `openNotificationSettings` | ⚠️ App Details | ⚠️ App Details | ✅ Settings | ✅ Settings | ✅ Settings |
-| `openUsageStatsSettings` | ✅ Settings | ✅ Settings | ✅ Settings | ✅ Settings | ✅ Settings |
+Dưới đây là danh sách đầy đủ các Method có trong Package và mức độ tương thích.
 
-> ✅ auto = không cần, tự trả `granted: true` · ⚠️ = fallback/log warn
+### 🛡️ Cấp quyền hệ thống (System & Special Permissions)
+
+| Method | Check Status | Open Settings | Android | Ghi chú |
+|:---|:---:|:---:|:---:|:---|
+| **Manage All Files** | `checkManageAllFiles()` | `openManageAllFiles()` | 11+ | Quyền quản lý toàn bộ tệp |
+| **Overlay** | `checkOverlay()` | `openOverlaySettings()` | 6.0+ | Hiển thị trên ứng dụng khác |
+| **Install Unknown Apps** | `checkInstallUnknownApps()` | `openInstallUnknownApps()` | 8.0+ | Cài đặt ứng dụng từ nguồn lạ |
+| **Battery Optimization** | `checkBatteryOptimization()` | `openBatteryOptimization()` | 6.0+ | Bỏ qua tối ưu hóa pin |
+| **Notifications** | - | `openNotificationSettings()` | 5.0+ | Cài đặt thông báo của App |
+| **Do Not Disturb** | - | `openNotificationPolicyAccess()` | 6.0+ | Truy cập chính sách không làm phiền |
+| **Accessibility** | - | `openAccessibilitySettings()` | 5.0+ | Cài đặt Trợ năng |
+| **Usage Stats** | - | `openUsageStatsSettings()` | 5.1+ | Dữ liệu sử dụng ứng dụng |
+| **Device Admin** | - | `openDeviceAdminSettings()` | 5.0+ | Quản trị thiết bị |
+
+### ⚙️ Cài đặt hệ thống (General System Settings)
+
+Mở trực tiếp các màn hình cài đặt của thiết bị:
+
+| Method | Chức năng | Android |
+|:---|:---|:---:|
+| `openWifiSettings()` | Cài đặt WiFi | 5.0+ |
+| `openLocationSettings()` | Cài đặt Vị trí | 5.0+ |
+| `openBluetoothSettings()` | Cài đặt Bluetooth | 5.0+ |
+| `openNfcSettings()` | Cài đặt NFC | 5.0+ |
+| `openDateTimeSettings()` | Cài đặt Ngày & Giờ | 5.0+ |
+| `openLanguageSettings()` | Cài đặt Ngôn ngữ | 5.0+ |
+| `openStorageSettings()` | Cài đặt Bộ nhớ | 5.0+ |
+| `openDisplaySettings()` | Cài đặt Hiển thị | 5.0+ |
+| `openSoundSettings()` | Cài đặt Âm thanh | 5.0+ |
+| `openAppDetailsSettings()`| Thông tin ứng dụng (App Info) | 5.0+ |
+| `openSettings()` | Cài đặt ứng dụng (App Settings) | 5.0+ |
+
+### 🔍 Kiểm tra quyền (Runtime Checks)
+
+| Method | Tham số | Kết quả |
+|:---|:---|:---|
+| `getDeviceInfo()` | Không | Trả về Model, SDK, và các cờ `supports...` |
+| `checkRuntimePermission()` | `{ permission: string }` | Check 1 quyền cụ thể (vd: `CAMERA`) |
+| `checkMultiplePermissions()`| `{ permissions: string[] }`| Check mảng nhiều quyền cùng lúc |
+| `checkAllRequired()` | Không | Check nhanh tất cả các quyền phổ biến |
 
 ---
+
+## 📋 Compatibility Matrix Summary
 
 ## 📋 API Summary & Compatibility
 
