@@ -1,0 +1,33 @@
+# Source files (không cần ship)
+src/
+scripts/check-capacitor.js
+
+# Dev configs
+tsconfig.json
+rollup.config.js
+.eslintrc.*
+.prettierrc*
+
+# Build artifacts không cần
+android/build/
+android/.gradle/
+android/.idea/
+*.iml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Git
+.gitignore
+.git/
+
+# Test
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+
+# Misc
+*.log
+.DS_Store
+node_modules/
