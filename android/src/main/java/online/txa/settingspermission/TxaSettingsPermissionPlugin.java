@@ -902,6 +902,19 @@ public class TxaSettingsPermissionPlugin extends Plugin {
         if (path.startsWith("/")) {
             return new File(path);
         }
+        
+        // Ưu tiên ghi ra Root của SDCard nếu đã có quyền "Manage All Files" hoặc "Write External"
+        // Điều này giúp người dùng dễ dàng tìm thấy file trong trình quản lý tệp.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                return new File(Environment.getExternalStorageDirectory(), path);
+            }
+        } else {
+             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                 return new File(Environment.getExternalStorageDirectory(), path);
+             }
+        }
+
         return new File(getContext().getExternalFilesDir(null), path);
     }
 

@@ -139,10 +139,17 @@ function printError(msg) {
   console.error('\x1b[31m%s\x1b[0m', msg);
 }
 
-// Chỉ chạy khi không phải CI và không phải build của chính plugin
+// Tự động phát hiện nếu đang chạy trong node_modules của một project khác
+const pluginRoot = path.dirname(__dirname);
 const isCI = process.env.CI === 'true';
-const isSelfBuild = process.env.npm_package_name === 'txa-settings-permission';
 
-if (!isCI && !isSelfBuild) {
+// Nếu plugin nằm trong node_modules → Chắc chắn là đang được cài vào project khác
+const isDependency = pluginRoot.includes('node_modules');
+
+// Hoặc nếu INIT_CWD (thư mục chạy npm install) khác với thư mục của plugin
+const initCwd = process.env.INIT_CWD;
+const isBeingInstalled = initCwd && initCwd !== pluginRoot;
+
+if (!isCI && (isDependency || isBeingInstalled)) {
   checkCapacitorInstalled();
 }

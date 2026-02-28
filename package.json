@@ -1,6 +1,7 @@
 {
   "name": "txa-settings-permission",
-  "version": "1.2.0",
+  "version": "1.3.0",
+  "type": "module",
   "description": "Capacitor plugin by TXA — Mở tất cả màn hình Settings cấp quyền trên Android, tự tương thích theo Android version",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -61,7 +62,7 @@
     "compile:bundle": "rollup -c rollup.config.js",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "prepublishOnly": "npm run build",
-    "postinstall": "node scripts/check-capacitor.js"
+    "postinstall": "node scripts/check-capacitor.cjs"
   },
   "peerDependencies": {
     "@capacitor/core": ">=4.0.0"
