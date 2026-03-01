@@ -1078,4 +1078,56 @@ public class TxaSettingsPermissionPlugin extends Plugin {
             call.reject("TXA_ERR_" + screenName + ": Không thể mở → " + e.getMessage(), screenName + "_FAILED", e);
         }
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // installApk: Cài đặt APK từ đường dẫn file
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @PluginMethod
+    public void installApk(PluginCall call) {
+        String filePath = call.getString("path");
+        if (filePath == null || filePath.isEmpty()) {
+            call.reject("TXA_ERR_PARAM: Thiếu tham số 'path'", "MISSING_PARAM");
+            return;
+        }
+
+        try {
+            File apkFile = new File(filePath);
+            if (!apkFile.exists()) {
+                call.reject("TXA_ERR_FILE: File APK không tồn tại: " + filePath, "FILE_NOT_FOUND");
+                return;
+            }
+
+            Activity activity = getActivity();
+            Context context = getContext();
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri apkUri;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // Android 7+: sử dụng FileProvider
+                apkUri = androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    context.getPackageName() + ".fileprovider",
+                    apkFile
+                );
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } else {
+                apkUri = Uri.fromFile(apkFile);
+            }
+
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity.startActivity(intent);
+
+            logInfo("installApk → Launching installer for: " + filePath);
+            JSObject result = new JSObject();
+            result.put("success", true);
+            result.put("log", buildLog("info", "Đã mở trình cài đặt APK", "INSTALL_APK", true));
+            call.resolve(result);
+        } catch (Exception e) {
+            logError("installApk → " + e.getMessage());
+            call.reject("TXA_ERR_INSTALL_APK: Không thể cài đặt APK → " + e.getMessage(), "INSTALL_APK_FAILED", e);
+        }
+    }
 }

@@ -190,4 +190,7 @@ export interface TxaSettingsPermissionPlugin {
   deleteFile(options: DeleteFileOptions): Promise<void>;
   mkdir(options: { path: string, recursive?: boolean }): Promise<void>;
   getUri(options: GetUriOptions): Promise<GetUriResult>;
+
+  // APK Installation
+  installApk(options: { path: string }): Promise<{ success: boolean; log: TxaPermissionLog }>;
 }

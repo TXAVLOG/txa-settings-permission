@@ -123,4 +123,9 @@ export class TxaSettingsPermissionWeb
   async getUri(options: GetUriOptions): Promise<GetUriResult> {
     return { uri: options.path };
   }
+
+  async installApk(options: { path: string }): Promise<{ success: boolean; log: TxaPermissionLog }> {
+    console.warn('[TxaSettingsPermission] Web: installApk không áp dụng trên web, mock trả về success');
+    return { success: true, log: webLog('INSTALL_APK') };
+  }
 }
