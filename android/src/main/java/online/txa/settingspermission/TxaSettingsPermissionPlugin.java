@@ -1049,6 +1049,42 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void readdir(PluginCall call) {
+        String path = call.getString("path");
+        if (path == null) {
+            call.reject("Path is required");
+            return;
+        }
+
+        try {
+            File dir = getFileObject(path);
+            if (!dir.exists() || !dir.isDirectory()) {
+                call.reject("Directory does not exist or is not a directory");
+                return;
+            }
+
+            File[] files = dir.listFiles();
+            JSArray filesArray = new JSArray();
+
+            if (files != null) {
+                for (File file : files) {
+                    JSObject fileObj = new JSObject();
+                    fileObj.put("name", file.getName());
+                    fileObj.put("type", file.isDirectory() ? "directory" : "file");
+                    fileObj.put("size", file.length());
+                    filesArray.put(fileObj);
+                }
+            }
+
+            JSObject result = new JSObject();
+            result.put("files", filesArray);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Failed to read directory: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
     public void getUri(PluginCall call) {
         String path = call.getString("path");
         if (path == null) {

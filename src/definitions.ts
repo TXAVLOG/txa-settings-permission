@@ -95,6 +95,18 @@ export interface GetUriResult {
   uri: string;
 }
 
+export interface ReaddirOptions {
+  path: string;
+}
+
+export interface ReaddirResult {
+  files: {
+    name: string;
+    type: 'file' | 'directory';
+    size: number;
+  }[];
+}
+
 export interface CheckRuntimePermissionOptions {
   /** Tên đầy đủ của permission, vd: "android.permission.CAMERA" */
   permission: string;
@@ -189,6 +201,7 @@ export interface TxaSettingsPermissionPlugin {
   readFile(options: ReadFileOptions): Promise<ReadFileResult>;
   deleteFile(options: DeleteFileOptions): Promise<void>;
   mkdir(options: { path: string, recursive?: boolean }): Promise<void>;
+  readdir(options: ReaddirOptions): Promise<ReaddirResult>;
   getUri(options: GetUriOptions): Promise<GetUriResult>;
 
   // APK Installation

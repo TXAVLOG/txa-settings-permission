@@ -1,6 +1,6 @@
 {
   "name": "txa-settings-permission",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "description": "Capacitor plugin by TXA — Mở tất cả màn hình Settings cấp quyền trên Android, tự tương thích theo Android version",
   "main": "dist/plugin.cjs.js",

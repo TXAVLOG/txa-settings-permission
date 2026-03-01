@@ -120,6 +120,10 @@ export class TxaSettingsPermissionWeb
   }
   async deleteFile(_options: DeleteFileOptions): Promise<void> { console.warn('deleteFile is not implemented on web'); }
   async mkdir(_options: { path: string, recursive?: boolean }): Promise<void> { console.warn('mkdir is not implemented on web'); }
+  async readdir(_options: import('./definitions').ReaddirOptions): Promise<import('./definitions').ReaddirResult> {
+    console.warn('readdir is not implemented on web');
+    return { files: [] };
+  }
   async getUri(options: GetUriOptions): Promise<GetUriResult> {
     return { uri: options.path };
   }
