@@ -91,6 +91,11 @@ export class TxaSettingsPermissionWeb
   async openDisplaySettings(): Promise<OpenSettingsResult> { return mockOpen('DISPLAY_SETTINGS'); }
   async openSoundSettings(): Promise<OpenSettingsResult> { return mockOpen('SOUND_SETTINGS'); }
 
+  async requestPermission(options: { permission: string }): Promise<PermissionResult | OpenSettingsResult> {
+    console.warn(`[TxaSettingsPermission] Web: requestPermission(${options.permission}) không áp dụng trên web`);
+    return { granted: true, log: webLog('REQUEST_PERMISSION') };
+  }
+
   async checkRuntimePermission(options: CheckRuntimePermissionOptions): Promise<CheckRuntimePermissionResult> {
     return { permission: options.permission, granted: true, log: webLog('CHECK_RUNTIME_PERMISSION') };
   }

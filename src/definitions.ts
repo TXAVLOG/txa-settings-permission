@@ -189,6 +189,7 @@ export interface TxaSettingsPermissionPlugin {
   openSoundSettings(): Promise<OpenSettingsResult>;
 
   // Runtime Permission checks
+  requestPermission(options: { permission: string }): Promise<PermissionResult | OpenSettingsResult>;
   checkRuntimePermission(options: CheckRuntimePermissionOptions): Promise<CheckRuntimePermissionResult>;
   checkMultiplePermissions(options: CheckMultiplePermissionsOptions): Promise<CheckMultiplePermissionsResult>;
 

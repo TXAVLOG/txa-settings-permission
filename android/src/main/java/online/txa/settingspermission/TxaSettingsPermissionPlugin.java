@@ -643,6 +643,27 @@ public class TxaSettingsPermissionPlugin extends Plugin {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // requestPermission: yêu cầu quyền động
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @PluginMethod
+    public void requestPermission(PluginCall call) {
+        String permission = call.getString("permission");
+        if (permission == null) {
+            call.reject("TXA_ERR_PARAM: Thiếu tham số 'permission'", "MISSING_PARAM");
+            return;
+        }
+
+        if ("install_unknown_apps".equals(permission)) {
+            openInstallUnknownApps(call);
+            return;
+        }
+
+        // Có thể bổ sung request runtime permission tại đây
+        call.reject("TXA_ERR: Quyền " + permission + " không được hỗ trợ trong requestPermission.");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // checkMultiplePermissions: check nhiều quyền 1 lúc
     // ─────────────────────────────────────────────────────────────────────────
 
